@@ -5,6 +5,10 @@ use vizia_plug::vizia::vg::Point;
 
 use vizia_plug::widgets::param_base::ParamWidgetBase;
 use vizia_plug::widgets::util::ModifiersExt;
+use windows::Win32::Foundation::POINT;
+use windows::Win32::UI::WindowsAndMessaging::GetCursorPos;
+use windows::Win32::UI::WindowsAndMessaging::SetCursorPos;
+use windows::Win32::UI::WindowsAndMessaging::ShowCursor;
 
 static DEFAULT_DRAG_SCALAR: f32 = 0.0042;
 static DEFAULT_WHEEL_SCALAR: f32 = 0.005;
@@ -13,6 +17,7 @@ static DEFAULT_WHEEL_SCALAR: f32 = 0.005;
 pub struct DragStatus {
     drag_start_y: f32,
     drag_start_value: f32,
+    drag_start_screen_pos: POINT,
 }
 
 #[derive(Lens)]
@@ -132,10 +137,17 @@ impl View for ParamKnob {
                     cx.capture();
                     cx.focus();
                     cx.set_active(true);
+                    force_hide_cursor();
+
+                    let mut current_screen_pos = POINT::default();
+                    unsafe {
+                        GetCursorPos(&mut current_screen_pos).unwrap();
+                    }
 
                     self.drag_status = Some(DragStatus {
                         drag_start_y: cx.mouse().cursor_y,
                         drag_start_value: self.param_base.unmodulated_normalized_value(),
+                        drag_start_screen_pos: current_screen_pos,
                     });
 
                     self.param_base.begin_set_parameter(cx);
@@ -156,6 +168,10 @@ impl View for ParamKnob {
                 if self.drag_status.is_some() {
                     self.drag_status = None;
 
+                    // cx.set_cursor_icon(CursorIcon::Default);
+                    // cx.set_cursor_grab(CursorGrabMode::Ungrab);
+                    force_show_cursor();
+
                     cx.release();
                     cx.set_active(false);
                     self.param_base.end_set_parameter(cx);
@@ -165,15 +181,32 @@ impl View for ParamKnob {
 
             WindowEvent::MouseMove(_, y) => {
                 if let Some(status) = self.drag_status {
-                    let dy = status.drag_start_y - *y;
-                    let mut value_delta = dy * self.drag_scalar;
-
-                    if cx.modifiers().shift() {
-                        value_delta *= 0.1;
+                    let mut current_screen_pos = POINT::default();
+                    unsafe {
+                        GetCursorPos(&mut current_screen_pos).unwrap();
                     }
 
-                    let new_val = (status.drag_start_value + value_delta).clamp(0.0, 1.0);
-                    self.param_base.set_normalized_value(cx, new_val);
+                    let dy = status.drag_start_screen_pos.y - current_screen_pos.y;
+
+                    if dy != 0 {
+                        let mut value_delta = dy as f32 * self.drag_scalar;
+                        if cx.modifiers().shift() {
+                            value_delta *= 0.1;
+                        }
+
+                        let current_val = self.param_base.unmodulated_normalized_value();
+                        let new_val = (current_val + value_delta).clamp(0.0, 1.0);
+                        self.param_base.set_normalized_value(cx, new_val);
+
+                        // 强行拉回
+                        unsafe {
+                            SetCursorPos(
+                                status.drag_start_screen_pos.x,
+                                status.drag_start_screen_pos.y,
+                            )
+                            .unwrap();
+                        }
+                    }
                     meta.consume();
                 }
             }
@@ -352,4 +385,12 @@ impl View for ArcTrack {
         path.line_to((tick_x1, tick_y1));
         canvas.draw_path(&path, &paint_tick);
     }
+}
+
+fn force_show_cursor() {
+    while unsafe { ShowCursor(true) } < 0 {}
+}
+
+fn force_hide_cursor() {
+    while unsafe { ShowCursor(false) } > 0 {}
 }

@@ -1,4 +1,4 @@
-use godieperser::DisperserPlugin;
+use im_disperser::DisperserPlugin;
 use nih_plug::prelude::*;
 
 fn main() {

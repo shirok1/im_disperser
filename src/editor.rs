@@ -73,7 +73,7 @@ pub(crate) fn create(
         VStack::new(cx, |cx| {
             VStack::new(cx, |cx| {
                 HStack::new(cx, |cx| {
-                    Label::new(cx, "GODIEPERSER").class("top-bar-text");
+                    Label::new(cx, "IM_DISPERSER").class("top-bar-text");
 
                     HStack::new(cx, |_| {}).width(Stretch(1.0));
 
@@ -119,7 +119,7 @@ pub(crate) fn create(
 
                 HStack::new(cx, |cx| {
                     VStack::new(cx, |cx| {
-                        Label::new(cx, "GODIEPERSER")
+                        Label::new(cx, "IM_DISPERSER")
                             .font_size(24.0)
                             .background_color(Color::rgb(18, 23, 19))
                             .color(Color::rgb(243, 255, 244))
@@ -172,7 +172,7 @@ pub(crate) fn create(
                 VStack::new(cx, |cx| {
                     VStack::new(cx, |cx| {
                         VStack::new(cx, |cx| {
-                            Label::new(cx, "GODIEPERSER").class("h1");
+                            Label::new(cx, "IM_DISPERSER").class("h1");
                             Label::new(cx, "cuz we need a free disperser plugin").class("h2");
                         })
                         .alignment(Alignment::TopLeft);
@@ -188,7 +188,7 @@ pub(crate) fn create(
                                 Button::new(cx, |cx| Label::new(cx, "this_repo"))
                                     .on_press(|cx| {
                                         cx.emit(MainViewEvent::OpenUrl(
-                                            "https://github.com/sout233/godieperser".to_owned(),
+                                            "https://github.com/sout233/im_disperser".to_owned(),
                                         ));
                                     })
                                     .class("link-btn");
@@ -211,7 +211,7 @@ pub(crate) fn create(
         });
 
         // VStack::new(cx, |cx| {
-        //     Label::new(cx, "GODIEPERSER")
+        //     Label::new(cx, "IM_DISPERSER")
         //         .font_family(vec![FamilyOwned::Named(String::from(NOTO_SANS))])
         //         .font_weight(FontWeightKeyword::Light)
         //         .font_size(30.0)

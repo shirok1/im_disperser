@@ -83,9 +83,9 @@ impl Default for DisperserParams {
 }
 
 impl Plugin for DisperserPlugin {
-    const NAME: &'static str = "GODIEPERSER";
+    const NAME: &'static str = "IM_DISPERSER";
     const VENDOR: &'static str = "IAMMRGODIE & SOUT AUDIO";
-    const URL: &'static str = "https://audio.soout.top/godieperser";
+    const URL: &'static str = "https://audio.soout.top/im_disperser";
     const EMAIL: &'static str = "sout233@163.com";
 
     const VERSION: &'static str = env!("CARGO_PKG_VERSION");
@@ -234,7 +234,7 @@ impl ClapPlugin for DisperserPlugin {
 }
 
 impl Vst3Plugin for DisperserPlugin {
-    const VST3_CLASS_ID: [u8; 16] = *b"GODIEPERSER_SOUT";
+    const VST3_CLASS_ID: [u8; 16] = *b"IMDISPERSER_SOUT";
     const VST3_SUBCATEGORIES: &'static [Vst3SubCategory] =
         &[Vst3SubCategory::Fx, Vst3SubCategory::Modulation];
 }
