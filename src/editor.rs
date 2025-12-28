@@ -20,9 +20,22 @@ struct Data {
     pre_signal: Arc<AtomicF32>,
     post_signal: Arc<AtomicF32>,
     knob_value: f32,
+    is_show_info_panel: bool,
 }
 
-impl Model for Data {}
+impl Model for Data {
+    fn event(&mut self, cx: &mut EventContext, event: &mut Event) {
+        event.map(|main_view_event, meta| match main_view_event {
+            MainViewEvent::ToggleInfoPanel => {
+                self.is_show_info_panel = !self.is_show_info_panel;
+            }
+        });
+    }
+}
+
+pub enum MainViewEvent {
+    ToggleInfoPanel,
+}
 
 pub(crate) fn default_state() -> Arc<ViziaState> {
     ViziaState::new(|| (800, 500))
@@ -47,6 +60,7 @@ pub(crate) fn create(
             pre_signal: pre_signal.clone(),
             post_signal: post_signal.clone(),
             knob_value: 0.0,
+            is_show_info_panel: false,
         }
         .build(cx);
 
@@ -70,6 +84,9 @@ pub(crate) fn create(
                         .class("peak-meter");
 
                         Button::new(cx, |cx| Label::new(cx, "?").alignment(Alignment::TopCenter))
+                            .on_press(|ex| {
+                                ex.emit(MainViewEvent::ToggleInfoPanel);
+                            })
                             .class("info-btn");
                     })
                     .class("top-bar-right");
@@ -142,6 +159,38 @@ pub(crate) fn create(
                 .height(Stretch(1.0));
             })
             .class("control-panel");
+        });
+
+        Binding::new(cx, Data::is_show_info_panel, |cx, show| {
+            if show.get(cx) {
+                VStack::new(cx, |cx| {
+                    VStack::new(cx, |cx| {
+                        VStack::new(cx, |cx| {
+                            Label::new(cx, "GODIEPERSER").class("h1");
+                            Label::new(cx, "cuz we need a free disperser plugin").class("h2");
+                        })
+                        .alignment(Alignment::TopLeft);
+                        HStack::new(cx, |cx| {
+                            VStack::new(cx, |cx| {
+                                Button::new(cx, |cx| Label::new(cx, "i_am_dsp_repo"))
+                                    .class("link-btn");
+                                Button::new(cx, |cx| Label::new(cx, "this_repo")).class("link-btn");
+                            });
+                            VStack::new(cx, |cx| {
+                                Label::new(cx, "DSP core [i_am_dsp] by IAMMRGODIE").class("p");
+                                Label::new(cx, "VST/CLAP re-implementation & UI design by sout")
+                                    .class("p");
+                            })
+                            .alignment(Alignment::BottomRight);
+                        });
+                    })
+                    .class("info-panel");
+                })
+                .on_press(|ex| {
+                    ex.emit(MainViewEvent::ToggleInfoPanel);
+                })
+                .class("info-panel-cont");
+            }
         });
 
         // VStack::new(cx, |cx| {
