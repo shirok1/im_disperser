@@ -1,6 +1,6 @@
 use atomic_float::AtomicF32;
 use nih_plug::prelude::*;
-use std::sync::{Arc, atomic::Ordering};
+use std::sync::Arc;
 use vizia_plug::ViziaState;
 
 use i_am_dsp::{

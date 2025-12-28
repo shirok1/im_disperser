@@ -4,7 +4,6 @@ use nih_plug::util;
 use std::sync::Arc;
 use std::sync::atomic::Ordering;
 use vizia_plug::vizia::prelude::*;
-use vizia_plug::widgets::PeakMeter;
 use vizia_plug::{ViziaState, ViziaTheming, create_vizia_editor};
 
 use crate::DisperserParams;
