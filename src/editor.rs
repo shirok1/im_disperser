@@ -4,6 +4,7 @@ use nih_plug::util;
 use std::sync::Arc;
 use std::sync::atomic::Ordering;
 use vizia_plug::vizia::prelude::*;
+use vizia_plug::vizia::vg::Pixel;
 use vizia_plug::{ViziaState, ViziaTheming, create_vizia_editor};
 
 use crate::DisperserParams;
@@ -56,19 +57,25 @@ pub(crate) fn create(
 
                     HStack::new(cx, |_| {}).width(Stretch(1.0));
 
-                    Label::new(cx, "PROCESSING").class("top-bar-text");
+                    HStack::new(cx, |cx| {
+                        Label::new(cx, "PROCESSING").class("top-bar-text");
 
-                    OmgPeakMeter::new(
-                        cx,
-                        Data::post_signal.map(|post_signal| {
-                            util::gain_to_db(post_signal.load(Ordering::Relaxed))
-                        }),
-                        Some(Duration::from_millis(600)),
-                    )
-                    .class("peak-meter");
+                        OmgPeakMeter::new(
+                            cx,
+                            Data::post_signal.map(|post_signal| {
+                                util::gain_to_db(post_signal.load(Ordering::Relaxed))
+                            }),
+                            Some(Duration::from_millis(600)),
+                        )
+                        .class("peak-meter");
+
+                        Button::new(cx, |cx| Label::new(cx, "?").alignment(Alignment::TopCenter))
+                            .class("info-btn");
+                    })
+                    .class("top-bar-right");
                 })
-                .padding(Pixels(4.0))
-                .height(Pixels(20.0));
+                .class("top-bar");
+
                 VStack::new(cx, |cx| {
                     WaveformView::new(
                         cx,
@@ -92,10 +99,12 @@ pub(crate) fn create(
                         Label::new(cx, "GODIEPERSER")
                             .font_size(24.0)
                             .background_color(Color::rgb(18, 23, 19))
-                            .color(Color::rgb(243, 255, 244));
+                            .color(Color::rgb(243, 255, 244))
+                            .class("animated-label");
                         Label::new(cx, "DSP CORE BY IAMMRDODIE")
                             .font_size(12.0)
-                            .color(Color::rgb(18, 23, 19));
+                            .color(Color::rgb(18, 23, 19))
+                            .class("animated-label");
                     })
                     .gap(Pixels(4.0))
                     .padding_left(Pixels(48.0))

@@ -74,3 +74,47 @@
     border-color: palegreen;
     width: 114px;
 }
+
+.top-bar {
+    padding: 4px;
+    height: 24px;
+}
+
+.top-bar-right {
+    gap: 4px;
+    width: auto;
+}
+
+.info-btn {
+    border: 1px dashed;
+    color: palegreen;
+    height: 20px;
+    rotate: 0deg;
+    width: 20px;
+    border-color: transparent;
+    background-color: transparent;
+    transition: border-color 233ms;
+    transition: rotate 233ms;
+    transform-origin: 0px 2px;
+    translate: 0px -2px;
+}
+
+.info-btn:hover {
+    border: 1px dashed;
+    border-color: palegreen;
+    background-color: transparent;
+    alignment: center;
+    rotate: 12deg;
+    transition: border-color 233ms;
+    transition: rotate 233ms;
+}
+
+.animated-label {
+    rotate: 0deg;
+    transition: rotate 2000ms;
+}
+
+.animated-label:hover {
+    rotate: 720deg;
+    transition: rotate 2000ms;
+}
