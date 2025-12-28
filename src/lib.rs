@@ -1,6 +1,6 @@
 use atomic_float::AtomicF32;
 use nih_plug::prelude::*;
-use std::sync::Arc;
+use std::sync::{Arc, atomic::Ordering};
 use vizia_plug::ViziaState;
 
 use i_am_dsp::{
@@ -20,7 +20,8 @@ pub struct DisperserPlugin {
     sample_rate: f32,
 
     peak_meter_decay_weight: f32,
-    peak_meter: Arc<AtomicF32>,
+    pre_signal: Arc<AtomicF32>,
+    post_signal: Arc<AtomicF32>,
 }
 
 #[derive(Params)]
@@ -46,7 +47,8 @@ impl Default for DisperserPlugin {
             sample_rate: 44100.0,
 
             peak_meter_decay_weight: 1.0,
-            peak_meter: Arc::new(AtomicF32::new(util::MINUS_INFINITY_DB)),
+            pre_signal: Arc::new(AtomicF32::new(util::MINUS_INFINITY_DB)),
+            post_signal: Arc::new(AtomicF32::new(util::MINUS_INFINITY_DB)),
         }
     }
 }
@@ -106,7 +108,8 @@ impl Plugin for DisperserPlugin {
     fn editor(&mut self, _async_executor: AsyncExecutor<Self>) -> Option<Box<dyn Editor>> {
         editor::create(
             self.params.clone(),
-            self.peak_meter.clone(),
+            self.pre_signal.clone(),
+            self.post_signal.clone(),
             self.params.editor_state.clone(),
         )
     }
@@ -151,8 +154,10 @@ impl Plugin for DisperserPlugin {
         let mut dsp_ctx: Box<dyn DspContext> = Box::new(simple_ctx);
 
         let mut amplitude = 0.0;
+        let mut original_amplitude = 0.0;
         let channels = buffer.channels();
 
+        // TODO: impl for other channels
         if channels == 2 {
             let samples = buffer.as_slice();
             let (left_chan, right_chan) = samples.split_at_mut(1);
@@ -162,6 +167,11 @@ impl Plugin for DisperserPlugin {
             for (l, r) in left_samples.iter_mut().zip(right_samples.iter_mut()) {
                 let mut frame = [*l, *r];
                 let other_inputs: &[&[f32; 2]] = &[];
+
+                let current_amp = l.abs().max(r.abs());
+                if current_amp > original_amplitude {
+                    original_amplitude = current_amp;
+                }
 
                 self.disperser
                     .process(&mut frame, other_inputs, &mut dsp_ctx);
@@ -179,8 +189,22 @@ impl Plugin for DisperserPlugin {
         for channel_samples in buffer.iter_samples() {
             if self.params.editor_state.is_open() {
                 let num_samples = channel_samples.len();
+                original_amplitude = (original_amplitude / num_samples as f32).abs();
+                let current_peak_meter = self.pre_signal.load(std::sync::atomic::Ordering::Relaxed);
+                let new_peak_meter = if original_amplitude > current_peak_meter {
+                    original_amplitude
+                } else {
+                    current_peak_meter * self.peak_meter_decay_weight
+                        + original_amplitude * (1.0 - self.peak_meter_decay_weight)
+                };
+
+                self.pre_signal
+                    .store(new_peak_meter, std::sync::atomic::Ordering::Relaxed);
+
+                let num_samples = channel_samples.len();
                 amplitude = (amplitude / num_samples as f32).abs();
-                let current_peak_meter = self.peak_meter.load(std::sync::atomic::Ordering::Relaxed);
+                let current_peak_meter =
+                    self.post_signal.load(std::sync::atomic::Ordering::Relaxed);
                 let new_peak_meter = if amplitude > current_peak_meter {
                     amplitude
                 } else {
@@ -188,8 +212,8 @@ impl Plugin for DisperserPlugin {
                         + amplitude * (1.0 - self.peak_meter_decay_weight)
                 };
 
-                self.peak_meter
-                    .store(new_peak_meter, std::sync::atomic::Ordering::Relaxed)
+                self.post_signal
+                    .store(new_peak_meter, std::sync::atomic::Ordering::Relaxed);
             }
         }
 

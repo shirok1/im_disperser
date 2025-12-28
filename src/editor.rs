@@ -8,6 +8,7 @@ use vizia_plug::widgets::PeakMeter;
 use vizia_plug::{ViziaState, ViziaTheming, create_vizia_editor};
 
 use crate::DisperserParams;
+use crate::widgets::omg_peak_meter::OmgPeakMeter;
 use crate::widgets::params_knob::ParamKnob;
 use crate::widgets::waveform_view::WaveformView;
 
@@ -16,7 +17,8 @@ pub const NOTO_SANS: &str = "Noto Sans";
 #[derive(Lens)]
 struct Data {
     params: Arc<DisperserParams>,
-    peak_meter: Arc<AtomicF32>,
+    pre_signal: Arc<AtomicF32>,
+    post_signal: Arc<AtomicF32>,
     knob_value: f32,
 }
 
@@ -28,7 +30,8 @@ pub(crate) fn default_state() -> Arc<ViziaState> {
 
 pub(crate) fn create(
     params: Arc<DisperserParams>,
-    peak_meter: Arc<AtomicF32>,
+    pre_signal: Arc<AtomicF32>,
+    post_signal: Arc<AtomicF32>,
     editor_state: Arc<ViziaState>,
 ) -> Option<Box<dyn Editor>> {
     create_vizia_editor(editor_state, ViziaTheming::Custom, move |cx, _| {
@@ -41,7 +44,8 @@ pub(crate) fn create(
 
         Data {
             params: params.clone(),
-            peak_meter: peak_meter.clone(),
+            pre_signal: pre_signal.clone(),
+            post_signal: post_signal.clone(),
             knob_value: 0.0,
         }
         .build(cx);
@@ -55,19 +59,22 @@ pub(crate) fn create(
 
                     Label::new(cx, "PROCESSING").class("top-bar-text");
 
-                    PeakMeter::new(
+                    OmgPeakMeter::new(
                         cx,
-                        Data::peak_meter
-                            .map(|peak_meter| util::gain_to_db(peak_meter.load(Ordering::Relaxed))),
+                        Data::post_signal.map(|post_signal| {
+                            util::gain_to_db(post_signal.load(Ordering::Relaxed))
+                        }),
                         Some(Duration::from_millis(600)),
-                    );
+                    )
+                    .class("peak-meter");
                 })
                 .padding(Pixels(4.0))
                 .height(Pixels(20.0));
                 VStack::new(cx, |cx| {
                     WaveformView::new(
                         cx,
-                        Data::peak_meter.map(|peak_meter| peak_meter.load(Ordering::Relaxed)),
+                        Data::pre_signal.map(|pre_signal| pre_signal.load(Ordering::Relaxed)),
+                        Data::post_signal.map(|post_signal| post_signal.load(Ordering::Relaxed)),
                         512,
                     )
                     .class("waveform-view");

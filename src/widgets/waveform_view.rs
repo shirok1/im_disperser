@@ -2,36 +2,56 @@ use std::collections::VecDeque;
 use vizia_plug::vizia::{prelude::*, vg};
 
 pub enum WaveformViewEvent {
-    AddSample(f32),
+    AddSample1(f32),
+    AddSample2(f32),
 }
 
 pub struct WaveformView {
-    buffer: VecDeque<f32>,
+    buffer1: VecDeque<f32>,
+    buffer2: VecDeque<f32>,
     max_samples: usize,
 }
 
 impl WaveformView {
-    pub fn new<L>(cx: &mut Context, lens: L, max_samples: usize) -> Handle<'_, Self>
+    pub fn new<L1, L2>(
+        cx: &mut Context,
+        lens1: L1,
+        lens2: L2,
+        max_samples: usize,
+    ) -> Handle<'_, Self>
     where
-        L: Lens<Target = f32>,
+        L1: Lens<Target = f32>,
+        L2: Lens<Target = f32>,
     {
         Self {
-            buffer: VecDeque::from(vec![0.0; max_samples]),
+            buffer1: VecDeque::from(vec![0.0; max_samples]),
+            buffer2: VecDeque::from(vec![0.0; max_samples]),
             max_samples,
         }
         .build(cx, |cx| {
-            Binding::new(cx, lens, |cx, sample_lens| {
-                let sample = sample_lens.get(cx);
-                cx.emit(WaveformViewEvent::AddSample(sample));
+            Binding::new(cx, lens1, |cx, sample_lens1| {
+                let sample = sample_lens1.get(cx);
+                cx.emit(WaveformViewEvent::AddSample1(sample));
+            });
+            Binding::new(cx, lens2, |cx, sample_lens2| {
+                let sample = sample_lens2.get(cx);
+                cx.emit(WaveformViewEvent::AddSample2(sample));
             });
         })
     }
 
-    fn push_sample(&mut self, sample: f32) {
-        if self.buffer.len() >= self.max_samples {
-            self.buffer.pop_front();
+    fn push_sample1(&mut self, sample: f32) {
+        if self.buffer1.len() >= self.max_samples {
+            self.buffer1.pop_front();
         }
-        self.buffer.push_back(sample);
+        self.buffer1.push_back(sample);
+    }
+
+    fn push_sample2(&mut self, sample: f32) {
+        if self.buffer2.len() >= self.max_samples {
+            self.buffer2.pop_front();
+        }
+        self.buffer2.push_back(sample);
     }
 }
 
@@ -42,8 +62,12 @@ impl View for WaveformView {
 
     fn event(&mut self, cx: &mut EventContext, event: &mut Event) {
         event.map(|waveform_event, _| match waveform_event {
-            WaveformViewEvent::AddSample(sample) => {
-                self.push_sample(*sample);
+            WaveformViewEvent::AddSample1(sample1) => {
+                self.push_sample1(*sample1);
+                cx.needs_redraw();
+            }
+            WaveformViewEvent::AddSample2(sample2) => {
+                self.push_sample2(*sample2);
                 cx.needs_redraw();
             }
         });
@@ -70,9 +94,10 @@ impl View for WaveformView {
 
         let mut wave_path = vg::Path::new();
 
+        //// buffer1
         // Top half
         let mut first = true;
-        for (i, &sample) in self.buffer.iter().enumerate() {
+        for (i, &sample) in self.buffer1.iter().enumerate() {
             let x = bounds.x + i as f32 * x_step;
             let sample_height = sample.abs().clamp(0.0, 1.0) * half_h;
             let y = mid_y - sample_height;
@@ -85,7 +110,7 @@ impl View for WaveformView {
         }
 
         // Bottom half, in reverse
-        for (i, &sample) in self.buffer.iter().enumerate().rev() {
+        for (i, &sample) in self.buffer1.iter().enumerate().rev() {
             let x = bounds.x + i as f32 * x_step;
             let sample_height = sample.abs().clamp(0.0, 1.0) * half_h;
             let y = mid_y + sample_height;
@@ -107,6 +132,42 @@ impl View for WaveformView {
         // 渲染轮廓线
         let mut stroke_paint = vg::Paint::default();
         stroke_paint.set_color(stroke_color);
+        stroke_paint.set_stroke_width(stroke_width);
+        stroke_paint.set_style(vg::PaintStyle::Stroke);
+        stroke_paint.set_stroke_cap(vg::PaintCap::Round);
+        stroke_paint.set_stroke_join(vg::PaintJoin::Round);
+        stroke_paint.set_anti_alias(true);
+        canvas.draw_path(&wave_path, &stroke_paint);
+
+        //// buffer2
+        // Top half
+        let mut first = true;
+        for (i, &sample) in self.buffer2.iter().enumerate() {
+            let x = bounds.x + i as f32 * x_step;
+            let sample_height = sample.abs().clamp(0.0, 1.0) * half_h;
+            let y = mid_y - sample_height;
+            if first {
+                wave_path.move_to((x, y));
+                first = false;
+            } else {
+                wave_path.line_to((x, y));
+            }
+        }
+
+        // Bottom half, in reverse
+        for (i, &sample) in self.buffer2.iter().enumerate().rev() {
+            let x = bounds.x + i as f32 * x_step;
+            let sample_height = sample.abs().clamp(0.0, 1.0) * half_h;
+            let y = mid_y + sample_height;
+            wave_path.line_to((x, y));
+        }
+
+        wave_path.close();
+
+        // 渲染轮廓线
+        let mut stroke_paint = vg::Paint::default();
+        stroke_paint.set_color(Color::palegreen());
+        stroke_paint.set_alpha_f(0.5);
         stroke_paint.set_stroke_width(stroke_width);
         stroke_paint.set_style(vg::PaintStyle::Stroke);
         stroke_paint.set_stroke_cap(vg::PaintCap::Round);
