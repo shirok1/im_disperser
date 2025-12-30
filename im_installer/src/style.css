@@ -20,7 +20,7 @@
 
 .opt-panel {
     height: auto;
-    max-width: 400px;
+    max-width: 600px;
     min-width: 300px;
     gap: 8px;
     padding: 12px;
@@ -39,6 +39,13 @@
 .p {
     font-size: 16px;
     opacity: 80%;
+}
+
+.p-xs {
+    font-size: 12px;
+    opacity: 80%;
+    width: 1s;
+    height: auto;
 }
 
 checkbox {
@@ -120,6 +127,25 @@ checkbox:checked:disabled {
     transition: border-color 100ms;
 }
 
+.next-btn:disabled {
+    background-color: #c4c4c4;
+    border-color: #c4c4c4;
+    transition: background-color 233ms;
+    transition: border-color 233ms;
+    transition: shadow 233ms;
+    cursor: arrow;
+}
+
+.next-btn:disabled:hover {
+    background-color: #c4c4c4;
+    border-color: #d3e3d8;
+    shadow: 0px 0px 48px 1px rgb(200 55 55 / 20%);
+    transition: background-color 233ms;
+    transition: border-color 233ms;
+    transition: shadow 233ms;
+    cursor: arrow;
+}
+
 .next-btn:hover {
     shadow: 0px 0px 48px 1px rgb(0 255 80 / 20%);
     background-color: #ebf6ef;
@@ -129,4 +155,64 @@ checkbox:checked:disabled {
 .next-btn:active {
     shadow: 0px 0px 0px 0px rgb(0 255 80 / 20%);
     background-color: #deede3;
+}
+
+.btn {
+    shadow:
+        2px 2px 12px 1px rgb(80 123 80 / 20%),
+        -2px -2px 12px 1px white;
+    corner-radius: 24px;
+    padding: 16px;
+    height: 32px;
+    background-color: #f5fef8;
+    border-color: #d3e3d8;
+    transition: background-color 100ms;
+    transition: border-color 100ms;
+}
+
+.btn:hover {
+    shadow: 0px 0px 48px 1px rgb(0 255 80 / 20%);
+    background-color: #ebf6ef;
+    transition: shadow 233ms;
+}
+
+.btn:active {
+    shadow: 0px 0px 0px 0px rgb(0 255 80 / 20%);
+    background-color: #deede3;
+}
+
+.shadow-bar {
+    height: 1px;
+    width: 100%;
+    shadow: 0px 4px 48px 12px rgb(120 244 144 / 60%);
+    position-type: absolute;
+    alignment: bottom-center;
+}
+
+.textbox {
+    width: 1s;
+    corner-radius: 24px;
+    background-color: rgb(255 255 255 / 80%);
+    line-clamp: 1;
+    selection-color: rgb(50 155 80 / 50%);
+}
+
+.textbox:focus {
+    background-color: white;
+    border-color: rgb(50 155 80 / 50%);
+    transition: background-color 100ms;
+    transition: border-color 100ms;
+}
+
+.textbox:disabled {
+    background-color: #c4c4c4;
+    border-color: #c4c4c4;
+    transition: background-color 100ms;
+    transition: border-color 100ms;
+}
+
+.textbox-stack {
+    height: 28px;
+    gap: 8px;
+    alignment: center;
 }

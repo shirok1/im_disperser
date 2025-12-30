@@ -28,6 +28,7 @@ pub struct ParamKnob {
     drag_scalar: f32,
     wheel_scalar: f32,
     centered: bool,
+    dragging: bool,
 }
 
 enum ParamKnobEvent {
@@ -57,6 +58,7 @@ impl ParamKnob {
             drag_scalar: DEFAULT_DRAG_SCALAR,
             wheel_scalar: DEFAULT_WHEEL_SCALAR,
             centered,
+            dragging: false,
         }
         .build(
             cx,
@@ -91,6 +93,16 @@ impl ParamKnob {
                         ArcTrack::new(cx, is_centered, -150.0, 150.0).value(normalized_value_lens);
                     }
                 });
+
+                Binding::new(cx, ParamKnob::dragging, move |cx, dragging| {
+                    if dragging.get(cx) {
+                        HStack::new(cx, |cx| {
+                            Label::new(cx, display_value_lens).class("param-value-label");
+                        })
+                        .position_type(PositionType::Absolute)
+                        .alignment(Alignment::TopCenter);
+                    }
+                })
             }),
         )
     }
@@ -138,6 +150,7 @@ impl View for ParamKnob {
                     cx.focus();
                     cx.set_active(true);
                     force_hide_cursor();
+                    self.dragging = true;
 
                     let mut current_screen_pos = POINT::default();
                     unsafe {
@@ -155,12 +168,17 @@ impl View for ParamKnob {
                 }
             }
 
-            WindowEvent::MouseDoubleClick(MouseButton::Left)
-            | WindowEvent::MouseDown(MouseButton::Right) => {
+            WindowEvent::MouseDoubleClick(MouseButton::Left) => {
                 self.param_base.begin_set_parameter(cx);
                 self.param_base
                     .set_normalized_value(cx, self.param_base.default_normalized_value());
                 self.param_base.end_set_parameter(cx);
+                meta.consume();
+            }
+
+            WindowEvent::MouseDown(MouseButton::Right) => {
+                self.text_input_active = true;
+                cx.set_active(true);
                 meta.consume();
             }
 
@@ -176,6 +194,7 @@ impl View for ParamKnob {
                     cx.set_active(false);
                     self.param_base.end_set_parameter(cx);
                     meta.consume();
+                    self.dragging = false;
                 }
             }
 
