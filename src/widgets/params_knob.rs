@@ -198,7 +198,7 @@ impl View for ParamKnob {
                 }
             }
 
-            WindowEvent::MouseMove(_, y) => {
+            WindowEvent::MouseMove(_, _y) => {
                 if let Some(status) = self.drag_status {
                     let mut current_screen_pos = POINT::default();
                     unsafe {

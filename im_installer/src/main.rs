@@ -1,19 +1,18 @@
 use std::{
-    fs::{self, write},
+    fs::{self},
     panic,
     path::Path,
     process,
     str::FromStr,
-    thread,
 };
 
-use vizia::{prelude::*, vg::Pixel};
+use vizia::prelude::*;
 
 use crate::{
     pages::{
         confirm_page::ConfirmPage,
         done_page::DonePage,
-        installing_page::{InstallingPage, InstallingPageEvent},
+        installing_page::InstallingPage,
         select_format_page::SelectFormatPage,
         select_path_page::SelectPathPage,
     },
@@ -60,7 +59,7 @@ pub enum TabPage {
 
 impl Model for AppData {
     fn event(&mut self, cx: &mut EventContext, event: &mut Event) {
-        event.map(|app_event, meta| match app_event {
+        event.map(|app_event, _meta| match app_event {
             AppEvent::ToggleInstallVst3 => {
                 self.install_vst3 = !self.install_vst3;
                 if !self.install_clap && !self.install_vst3 {

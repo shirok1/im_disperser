@@ -4,7 +4,6 @@ use nih_plug::util;
 use std::sync::Arc;
 use std::sync::atomic::Ordering;
 use vizia_plug::vizia::prelude::*;
-use vizia_plug::vizia::vg::Pixel;
 use vizia_plug::{ViziaState, ViziaTheming, create_vizia_editor};
 
 use crate::DisperserParams;
@@ -12,20 +11,19 @@ use crate::widgets::omg_peak_meter::OmgPeakMeter;
 use crate::widgets::params_knob::ParamKnob;
 use crate::widgets::waveform_view::WaveformView;
 
-pub const NOTO_SANS: &str = "Noto Sans";
+// pub const NOTO_SANS: &str = "Noto Sans";
 
 #[derive(Lens)]
 struct Data {
     params: Arc<DisperserParams>,
     pre_signal: Arc<AtomicF32>,
     post_signal: Arc<AtomicF32>,
-    knob_value: f32,
     is_show_info_panel: bool,
 }
 
 impl Model for Data {
-    fn event(&mut self, cx: &mut EventContext, event: &mut Event) {
-        event.map(|main_view_event, meta| match main_view_event {
+    fn event(&mut self, _cx: &mut EventContext, event: &mut Event) {
+        event.map(|main_view_event, _meta| match main_view_event {
             MainViewEvent::ToggleInfoPanel => {
                 self.is_show_info_panel = !self.is_show_info_panel;
             }
@@ -65,7 +63,6 @@ pub(crate) fn create(
             params: params.clone(),
             pre_signal: pre_signal.clone(),
             post_signal: post_signal.clone(),
-            knob_value: 0.0,
             is_show_info_panel: false,
         }
         .build(cx);

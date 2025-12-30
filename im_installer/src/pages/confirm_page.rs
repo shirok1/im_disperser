@@ -1,11 +1,9 @@
-use vizia::{prelude::*, vg::Pixel};
-
-use crate::AppEvent;
+use vizia::prelude::*;
 
 #[derive(Lens)]
 pub(crate) struct ConfirmPage {}
 
-pub(crate) enum ConfirmPageEvent {}
+// pub(crate) enum ConfirmPageEvent {}
 
 impl ConfirmPage {
     pub fn new(
@@ -55,7 +53,7 @@ impl View for ConfirmPage {
         Some("select-format-page")
     }
 
-    fn event(&mut self, cx: &mut EventContext, event: &mut Event) {
+    fn event(&mut self, _cx: &mut EventContext, _event: &mut Event) {
         // event.map(|app_event, meta| match app_event {
         //     ConfirmPageEvent::Install => {
         //         self.show_install_btn = false;

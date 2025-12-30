@@ -1,7 +1,5 @@
 use vizia::prelude::*;
 
-use crate::{AppEvent, err_msgbox, utils::msgbox};
-
 #[derive(Lens)]
 pub(crate) struct InstallingPage {
     subtitle: Localized,
@@ -10,7 +8,6 @@ pub(crate) struct InstallingPage {
 
 pub(crate) enum InstallingPageEvent {
     Install,
-    Finish,
 }
 
 impl InstallingPage {
@@ -42,15 +39,11 @@ impl View for InstallingPage {
         Some("select-format-page")
     }
 
-    fn event(&mut self, cx: &mut EventContext, event: &mut Event) {
-        event.map(|app_event, meta| match app_event {
+    fn event(&mut self, _cx: &mut EventContext, event: &mut Event) {
+        event.map(|app_event, _meta| match app_event {
             InstallingPageEvent::Install => {
                 self.show_install_btn = false;
                 self.subtitle = Localized::new("installing");
-            }
-            InstallingPageEvent::Finish => {
-                self.show_install_btn = false;
-                self.subtitle = Localized::new("install-finish");
             }
         });
     }

@@ -21,5 +21,5 @@ impl View for DonePage {
         Some("select-format-page")
     }
 
-    fn event(&mut self, cx: &mut EventContext, event: &mut Event) {}
+    fn event(&mut self, _cx: &mut EventContext, _event: &mut Event) {}
 }

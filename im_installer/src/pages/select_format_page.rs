@@ -45,7 +45,7 @@ impl View for SelectFormatPage {
         Some("select-format-page")
     }
 
-    fn event(&mut self, cx: &mut EventContext, event: &mut Event) {
+    fn event(&mut self, _cx: &mut EventContext, _event: &mut Event) {
         // event.map(|app_event, meta| match app_event {
         //     AppEvent::ToggleInstallVst3 => self.install_vst3 = !self.install_vst3,
         //     AppEvent::ToggleInstallClap => self.install_clap = !self.install_clap,
