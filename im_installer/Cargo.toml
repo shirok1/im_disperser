@@ -5,6 +5,8 @@ edition = "2024"
 
 [dependencies]
 vizia = { git = "https://github.com/vizia/vizia" }
-windows-elevate = "0.1.0"
 rfd = "0.16.0"
+
+[target.'cfg(windows)'.dependencies]
+windows-elevate = "0.1.0"
 privesc = "1.2.0"
