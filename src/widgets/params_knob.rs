@@ -5,6 +5,8 @@ use vizia_plug::vizia::vg::Point;
 
 use vizia_plug::widgets::param_base::ParamWidgetBase;
 use vizia_plug::widgets::util::ModifiersExt;
+
+#[cfg(windows)]
 use windows::Win32::{
     Foundation::POINT,
     UI::WindowsAndMessaging::{GetCursorPos, SetCursorPos, ShowCursor},
@@ -17,7 +19,7 @@ static DEFAULT_WHEEL_SCALAR: f32 = 0.005;
 pub struct DragStatus {
     drag_start_y: f32,
     drag_start_value: f32,
-    drag_start_screen_pos: POINT,
+    drag_start_screen_pos: (i32, i32),
 }
 
 #[derive(Lens)]
@@ -152,10 +154,7 @@ impl View for ParamKnob {
                     force_hide_cursor();
                     self.dragging = true;
 
-                    let mut current_screen_pos = POINT::default();
-                    unsafe {
-                        GetCursorPos(&mut current_screen_pos).unwrap();
-                    }
+                    let current_screen_pos = get_cursor_pos();
 
                     self.drag_status = Some(DragStatus {
                         drag_start_y: cx.mouse().cursor_y,
@@ -200,30 +199,28 @@ impl View for ParamKnob {
 
             WindowEvent::MouseMove(_, _y) => {
                 if let Some(status) = self.drag_status {
-                    let mut current_screen_pos = POINT::default();
-                    unsafe {
-                        GetCursorPos(&mut current_screen_pos).unwrap();
-                    }
+                    let (dy, current_screen_pos) = get_drag_delta(cx, status);
 
-                    let dy = status.drag_start_screen_pos.y - current_screen_pos.y;
-
-                    if dy != 0 {
-                        let mut value_delta = dy as f32 * self.drag_scalar;
+                    if dy != 0.0 {
+                        let mut value_delta = dy * self.drag_scalar;
                         if cx.modifiers().shift() {
                             value_delta *= 0.1;
                         }
 
-                        let current_val = self.param_base.unmodulated_normalized_value();
-                        let new_val = (current_val + value_delta).clamp(0.0, 1.0);
+                        #[cfg(windows)]
+                        let new_val = {
+                            let current_val = self.param_base.unmodulated_normalized_value();
+                            (current_val + value_delta).clamp(0.0, 1.0)
+                        };
+
+                        #[cfg(not(windows))]
+                        let new_val = (status.drag_start_value + value_delta).clamp(0.0, 1.0);
+
                         self.param_base.set_normalized_value(cx, new_val);
 
                         // 强行拉回
-                        unsafe {
-                            SetCursorPos(
-                                status.drag_start_screen_pos.x,
-                                status.drag_start_screen_pos.y,
-                            )
-                            .unwrap();
+                        if current_screen_pos.is_some() {
+                            set_cursor_pos(status.drag_start_screen_pos);
                         }
                     }
                     meta.consume();
@@ -407,9 +404,49 @@ impl View for ArcTrack {
 }
 
 fn force_show_cursor() {
+    #[cfg(windows)]
     while unsafe { ShowCursor(true) } < 0 {}
 }
 
 fn force_hide_cursor() {
+    #[cfg(windows)]
     while unsafe { ShowCursor(false) } > 0 {}
+}
+
+#[cfg(windows)]
+fn get_cursor_pos() -> (i32, i32) {
+    let mut pos = POINT::default();
+    unsafe {
+        GetCursorPos(&mut pos).unwrap();
+    }
+    (pos.x, pos.y)
+}
+
+#[cfg(not(windows))]
+fn get_cursor_pos() -> (i32, i32) {
+    (0, 0)
+}
+
+#[cfg(windows)]
+fn set_cursor_pos(pos: (i32, i32)) {
+    unsafe {
+        SetCursorPos(pos.0, pos.1).unwrap();
+    }
+}
+
+#[cfg(not(windows))]
+fn set_cursor_pos(_pos: (i32, i32)) {}
+
+fn get_drag_delta(cx: &EventContext, status: DragStatus) -> (f32, Option<(i32, i32)>) {
+    #[cfg(windows)]
+    {
+        let current_screen_pos = get_cursor_pos();
+        let dy = (status.drag_start_screen_pos.1 - current_screen_pos.1) as f32;
+        (dy, Some(current_screen_pos))
+    }
+    #[cfg(not(windows))]
+    {
+        let dy = status.drag_start_y - cx.mouse().cursor_y;
+        (dy, None)
+    }
 }
