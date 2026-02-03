@@ -12,7 +12,9 @@ members = ["im_installer", "xtask"]
 crate-type = ["cdylib", "lib"]
 
 [dependencies]
-i_am_dsp = { git = "https://github.com/IAMMRGODIE/i_am_dsp" }
+i_am_dsp = { git = "https://github.com/IAMMRGODIE/i_am_dsp", features = [
+  "real_time_demo",
+] }
 nih_plug = { git = "https://github.com/robbert-vdh/nih-plug", features = [
   "standalone",
 ] }
