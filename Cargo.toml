@@ -5,7 +5,7 @@ edition = "2024"
 license = "GPL-3.0"
 
 [workspace]
-members = ["im_installer","xtask"]
+members = ["im_installer", "xtask"]
 
 [lib]
 # The `lib` artifact is needed for the standalone target
@@ -13,7 +13,9 @@ crate-type = ["cdylib", "lib"]
 
 [dependencies]
 i_am_dsp = { git = "https://github.com/IAMMRGODIE/i_am_dsp" }
-nih_plug = { git = "https://github.com/robbert-vdh/nih-plug", features = ["standalone"] }
+nih_plug = { git = "https://github.com/robbert-vdh/nih-plug", features = [
+  "standalone",
+] }
 vizia_plug = { git = "https://github.com/vizia/vizia-plug", rev = "07ab0ec4" }
 atomic_float = "0.1"
 # vizia = { git = "https://github.com/vizia/vizia", rev = "c0ada337", default-features = false, features = ["baseview", "clipboard", "x11"] }

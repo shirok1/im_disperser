@@ -5,10 +5,10 @@ use vizia_plug::vizia::vg::Point;
 
 use vizia_plug::widgets::param_base::ParamWidgetBase;
 use vizia_plug::widgets::util::ModifiersExt;
-use windows::Win32::Foundation::POINT;
-use windows::Win32::UI::WindowsAndMessaging::GetCursorPos;
-use windows::Win32::UI::WindowsAndMessaging::SetCursorPos;
-use windows::Win32::UI::WindowsAndMessaging::ShowCursor;
+use windows::Win32::{
+    Foundation::POINT,
+    UI::WindowsAndMessaging::{GetCursorPos, SetCursorPos, ShowCursor},
+};
 
 static DEFAULT_DRAG_SCALAR: f32 = 0.0042;
 static DEFAULT_WHEEL_SCALAR: f32 = 0.005;

@@ -10,11 +10,8 @@ use vizia::prelude::*;
 
 use crate::{
     pages::{
-        confirm_page::ConfirmPage,
-        done_page::DonePage,
-        installing_page::InstallingPage,
-        select_format_page::SelectFormatPage,
-        select_path_page::SelectPathPage,
+        confirm_page::ConfirmPage, done_page::DonePage, installing_page::InstallingPage,
+        select_format_page::SelectFormatPage, select_path_page::SelectPathPage,
     },
     utils::localize::{Language, ToLocalizeKey},
 };
